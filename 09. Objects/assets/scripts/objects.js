@@ -17,10 +17,20 @@ const renderMovies = (filter = "") => {
 
     filteredMovies.forEach((movie) => {
         const movieEl = document.createElement("li");
-        let text = movie.info.title + " - ";
-        for (const key in movie.info) {
-            if (key !== "title") {
-                text = text + `${key}: ${movie.info[key]}`;
+        if ('info' in movie) {
+            // check if property exist
+        }
+        const {info, ...otherProps} = movie; //object destructuring
+        console.log(otherProps);
+        //const {title: movieTitle} = info; //object destructuring and new name to key
+        //let text = movieTitle + " - ";
+        let {getFormattedTitle} = movie;
+        //getFormattedTitle = getFormattedTitle.bind(movie); //object destructuring with bind()
+        //let text = getFormattedTitle() + " - ";
+        let text = getFormattedTitle.call(movie) + " - "; // call executes a function right away
+        for (const key in info) {
+            if (key !== "title" && key !== '_title') {
+                text = text + `${key}: ${info[key]}`;
             }
         }
         movieEl.textContent = text;
@@ -39,11 +49,27 @@ const addMovieHandler = () => {
 
     const newMovie = {
         info: {
-            title,
+            set title(val) {
+                if (val.trim() === "") {
+                    this._title = "DEFAULT";
+                    return;
+                }
+                this._title = val
+            },
+            get title() {
+                return this._title.toUpperCase();
+            },
             [extraName]: extraValue
         },
-        id: Math.random()
+        id: Math.random().toString(),
+        getFormattedTitle() {
+            console.log(this);
+            return this.info.title.toUpperCase(); // this always refers to what called the function pl.: movie.getFormattedTitle()
+        }
     };
+
+    newMovie.info.title = title;
+    console.log(newMovie.info.title);
 
     movies.push(newMovie);
     renderMovies();
